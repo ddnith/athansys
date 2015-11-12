@@ -4,7 +4,10 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -19,12 +22,16 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.athansys.workingwithvolley.R;
+import com.athansys.workingwithvolley.adapters.PatientListAdapter;
 import com.athansys.workingwithvolley.app.AppController;
 import com.athansys.workingwithvolley.constatnts.UrlConstants;
+import com.athansys.workingwithvolley.models.AppointmentModel;
 import com.athansys.workingwithvolley.models.AppointmentsListModel;
 import com.google.gson.Gson;
 
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,7 +40,11 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = AppController.class
             .getSimpleName();
 
-    private TextView helloTv;
+//    private TextView helloTv;
+    private SwipeRefreshLayout swipeContainer;
+    private RecyclerView patientList;
+    private PatientListAdapter mPatientListAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,10 +62,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        helloTv = (TextView) findViewById(R.id.helloTextView);
-        helloTv.setText("Wow");
+//        helloTv = (TextView) findViewById(R.id.helloTextView);
+//        helloTv.setText("Wow");
+
+        initUiFirstTime();
 
         loadPatientsList();
+    }
+
+    private void initUiFirstTime() {
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadPatientsList();
+            }
+        });
+
+        patientList = (RecyclerView) findViewById(R.id.patientList);
+        patientList.setLayoutManager(new LinearLayoutManager(this));
+        mPatientListAdapter = new PatientListAdapter(MainActivity.this,new ArrayList<AppointmentModel>());
+        patientList.setAdapter(mPatientListAdapter);
     }
 
     private void loadPatientsList() {
@@ -72,8 +100,10 @@ public class MainActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 AppointmentsListModel appointmentsListModel = gson.fromJson(response,AppointmentsListModel.class);
                 String doctorId = String.valueOf(appointmentsListModel.getAppointmentsList().getDoctorId());
-
-                helloTv.setText(doctorId);
+//                mPatientListAdapter = new PatientListAdapter(MainActivity.this,appointmentsListModel.getAppointmentsList().getAppointmentModelArrayList());
+//                patientList.setAdapter(mPatientListAdapter);
+                mPatientListAdapter.updateData(appointmentsListModel.getAppointmentsList().getAppointmentModelArrayList());
+                swipeContainer.setRefreshing(false);
 
             }
         }, new Response.ErrorListener() {
