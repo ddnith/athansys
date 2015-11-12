@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = AppController.class
             .getSimpleName();
 
-//    private TextView helloTv;
     private SwipeRefreshLayout swipeContainer;
     private RecyclerView patientList;
     private PatientListAdapter mPatientListAdapter;
@@ -61,12 +60,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
-//        helloTv = (TextView) findViewById(R.id.helloTextView);
-//        helloTv.setText("Wow");
-
         initUiFirstTime();
-
         loadPatientsList();
     }
 
@@ -99,9 +93,6 @@ public class MainActivity extends AppCompatActivity {
 
                 Gson gson = new Gson();
                 AppointmentsListModel appointmentsListModel = gson.fromJson(response,AppointmentsListModel.class);
-                String doctorId = String.valueOf(appointmentsListModel.getAppointmentsList().getDoctorId());
-//                mPatientListAdapter = new PatientListAdapter(MainActivity.this,appointmentsListModel.getAppointmentsList().getAppointmentModelArrayList());
-//                patientList.setAdapter(mPatientListAdapter);
                 mPatientListAdapter.updateData(appointmentsListModel.getAppointmentsList().getAppointmentModelArrayList());
                 swipeContainer.setRefreshing(false);
 
