@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -29,9 +30,12 @@ import com.athansys.workingwithvolley.models.AppointmentModel;
 import com.athansys.workingwithvolley.models.AppointmentsListModel;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,8 +60,9 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                postSampleData();
             }
         });
         initUiFirstTime();
@@ -77,6 +82,56 @@ public class MainActivity extends AppCompatActivity {
         patientList.setLayoutManager(new LinearLayoutManager(this));
         mPatientListAdapter = new PatientListAdapter(MainActivity.this,new ArrayList<AppointmentModel>());
         patientList.setAdapter(mPatientListAdapter);
+    }
+
+    private void postSampleData(){
+
+        // Tag used to cancel the request
+        String tag_json_obj = "json_obj_req";
+
+        String url = "http://httpbin.org/post";
+
+        final ProgressDialog pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Loading...");
+        pDialog.show();
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        pDialog.hide();
+                        try {
+                            JSONObject jsonResponse = new JSONObject(response).getJSONObject("form");
+                            String site = jsonResponse.getString("site"),
+                                    network = jsonResponse.getString("network");
+                            System.out.println("Site: "+site+"\nNetwork: "+network);
+                            Toast.makeText(MainActivity.this,"Data Posted SuccessFully",Toast.LENGTH_LONG).show();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String>  params = new HashMap<>();
+                // the POST parameters:
+                params.put("site", "code");
+                params.put("network", "tutsplus");
+                return params;
+            }
+        };
+
+// Adding request to request queue
+        AppController.getInstance().addToRequestQueue(postRequest, tag_json_obj);
+
     }
 
     private void loadPatientsList() {
